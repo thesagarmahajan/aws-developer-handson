@@ -1,0 +1,952 @@
+IAM Hands-on
+	Recipe-1
+		- Create Groups
+		- Create IAM User
+			- Add IAM User into a group
+			- With Password, Enable MFA
+		- Login as IAM User
+		- Create Policy Document
+		- Assign Policy Document to IAM User & Group
+		- Assign individual permissions to IAM user 
+______________________________________________________________________________________________________
+
+AWS CLI Hands-on
+	Recipe-1 (Installing and accessing AWS Management Console through CLI)
+		- Use AWS CLI from AWS Management Console
+		- Install & Configure AWS CLI on windows machine
+		- AWS Config
+		- Enter access key and secret access key
+		- Use AWS CLI from CMD
+		Note: If you want to aws config in another machine for same IAM then you have to generate a new pair for access and secret access key
+	Recipe-2 (Access IAM service through AWS CLI)
+		- aws iam list-users
+		- aws iam create-user --user-name <username>
+		- aws iam delete-user --user-name <username>
+		- aws iam create-login-profile --user-name <username> --password <some_password>
+		- aws iam update-login-profile --user-name <username> --password <some_password>
+		- aws iam create-group --group-name <group_name>
+		- aws iam list-groups
+		- aws iam attach-group-policy --policy-arn <policy_arn> --group-name <group_name>
+		- aws iam list-attached-group-policies --group-name <group_name>
+		- aws iam add-user-to-group --user-name <user_name> --group-name <group_name>
+		- List Users inside a group: !available
+		- aws iam detach-group-policy --group-name <group_name> --policy-arn <policy_arn>
+		- aws iam delete-group --group-name <group_name>
+	Recipe-3 (Accessing EC2 service through AWS CLI)
+		- aws ec2 describe-instances
+		- aws ec2 describe-instances --query "Reservations[*].Instances[*].{Instance:InstanceId, PublicIP:PublicIpAddress,Type:InstanceType,Name:Tags[?Key=='Name']|[0].Value,Status:State.Name}"  --filters "Name=instance-state-name,Values=running" "Name=tag:Name,Values='*'" --output table
+		- aws ec2 stop-instances --instance-ids <instance_id>
+		- aws ec2 start-instances --instance-ids <instance_id>
+		- aws ec2 terminate-instances --instance-ids <instance_id>
+______________________________________________________________________________________________________
+
+EC2 hands-on
+	Recipe-1 (Creating and Accessing EC2 Instance)
+		- Launch EC2 Instance with httpd service and an index.html file
+		- Connect with EC2 insance through SSH
+		- Roaming through filesystem
+		- Usgin CLI to do basic Operations
+			- Creating files
+			- Writing into file
+			- Deleting files
+			- Copying files
+			- Moving Files etc.
+			- Renaming Files
+			- Finding Files
+			- File permissions
+	Recipe-2 (Security Groups)
+		- Creating security group
+		- Managing Inbound and Outbound rules
+		- Assigning security group to EC2 instance
+	Recipe-3 (Roles)
+		- Add Role to EC2 Instance to access other services e.g. IAM (list-uss)
+		- Connect with EC2 instance using SSH and use IAM service
+		- Don't ```aws configure``` to your EC2 instance 
+______________________________________________________________________________________________________
+
+EBS Hands-on
+	Miscellaneous
+		- Check available disk space: df -h
+		- List block storages: lsblk
+	Recipe-1 (Creating and Managing EBS Volume)
+		- Go To Volumes Section on EC2 Dashboard
+		- Click: Create Volume
+		- Volume Type: gp2
+		- Size: 2 GB (Can go upto 30 GB total in free tier)
+		- Avilability Zone: Same as ec2 AZ to which you want to attach this volume
+		- Click: Create Volume
+	Recipe-2 (Make an Amazon EBS volume available for use on Linux)
+		- Connect with EC2 instance
+		- Exe: lsblk (List Block Devices)
+		- Exe: sudo file -s /dev/xvdf (To get information about a specific device, such as its file system type)
+		- Exe: sudo mkfs -t xfs /dev/xvdf (Create a filesystem)
+		- Exe: sudo mkdir /data (To create a dir for mount point)
+		- Exe: sudo mount /dev/xvdf /data (Map the mount point with volume)
+	Recipe-3 (Attaching and Detaching the volume with existing EC2 instance)
+		Attaching
+			- Go To: Volumes
+			- Select the volume
+			- Click: Actions
+			- Select: Attach Volume
+			- Select Instance
+			- Click: Attach
+		Detaching
+			- Follow same steps as Attaching
+			- Select Detach Volume in Actions Select Box
+		Delete on Terminate
+			- If selected yes the it will be deleted after the associated ec2 instance gets terminated 
+	Recipe-4 (Snapshot)
+		- Create EBS Snapshot
+		- Move to another region
+		- create volume again from the snapshot
+	Recipe-5 (Saving snapshot to s3)
+		- If you have a backup snapshot: Create volume from snap
+		- Attach volume to EC2
+		- Mount attached volume 
+		- dd if=/dev/xvdj bs=8M | gzip > /home/ubuntu/volbk.gz
+		- aws s3 cp ~/volbk.gz s3://my-bucket-name
+		- Terminate temp ec2 instance
+		- Delete volume
+______________________________________________________________________________________________________
+
+AMI (Amazon Machine Image) Hands-on
+	Recipe-1 (Creating AMI From EC2)
+		- Go TO Instances
+		- Select instance
+		- Click: Actions > Image & Templates > Select: Create Image
+		- Set Image Name, Description
+		- Add new volumes if required
+		- Click: Create Image
+	Recipe-2 (Creating EC2 From AMI)
+		- Go To AMIs Section in EC2 Dashboard
+		- Select AMI
+		- Click : Launch Instance from AMI
+		- Provide: Instance Name (From AMI)
+		- Application & OS Images Section: Click: My AMIs Tab
+			- Select: Owned by me
+			- Select: AMI
+		- Select other configuration
+		- Advance Details > User Data: As the services are already installed in the new instance only deploye code (e.g. HTML Content)
+		- Click: Launch Instance
+______________________________________________________________________________________________________
+
+EC2 Instance Store Handson
+	None
+______________________________________________________________________________________________________
+
+EFS Hands-on 
+	Recipe-1 (Creating & Using An EFS)
+		- Creating EFS
+			- Go To: EFS Dashboard
+			- Click: Create File System
+			- In the pop up > Click: Customize
+			- File system settings page
+				- Provide Name 
+				- Keep all configuration as default
+				- Click: Next
+			- Network Access Page
+				- VPC: Default
+			- In a new tab: Create a security group
+				- No Inbound Rules
+				- Outbound Rules: All Traffic from Everywhere (Default)
+			- Come back to Network Access Page
+				- Mount Targets > Dis-select all security groups and select newely created security group
+				- Click: Next
+			- File System Policy Page
+				- Keep Default
+				- Clicl: Next
+			- Review & Create Page
+				- Check if everything is ok
+				- Click: Create 
+		- Creating EC2 Instances
+			Instance 1
+				- Everything as per we have been doing till now except:
+				- Network Settings
+					- Click: Edit
+					- Select a subnet
+				- Storage
+					- Select: EFS
+					- Click: Add Shared File System
+					- Select EFS
+				- Click: Launch
+			Instance 2
+				- Select a subnet different from "Instance 1"
+				- Select the security group created automatically whilte creating "Instance 1"
+				- Storage
+					- Select: EFS
+					- Click: Add Shared File System
+					- Select EFS
+				- Click: Launch
+		- Accessing files as common files from both instances
+			- Connect with an instance
+			- Create a file at /mnt/efs/fs1
+			- Connect with another instance
+			- Try to read file crated at /mnt/efs/fs1
+______________________________________________________________________________________________________
+
+ELB Hands-on
+	Application Load Balancer
+		Recipe-1 (Creating Application Load Balancer)
+			- Create 2 EC2 instances at a time with ec2-fundamentals/ec2-user-data.sh
+			- Create application load balancer for all available availability zones in network mapping
+			- Remove default SG, Create and Assign a new security group with inbound rule: All HTTP from Anywhere
+			- Create target group of EC2 instances and assign
+			- Copy the DNS Name provided by Load Balancer paste in the browser URL section and refresh multiple time to see the different result
+		Recipe-2 (Control Redirection)
+			- Edit the security group assigned to EC2 instance
+				- Edit inbound coming from security group of ALB
+			- Edit ALB Listeners: Rules Section > Manage Rules
+				- Add Rule
+					- Path Wise
+					- HTTP Header Wise
+					etc.
+		Recipe-3 (Sticky Session)
+			- Follow recipe-1
+			- Enable Sticky Session
+				- Open target group
+				- Edit Attributes
+				- Check the checkbox "Stickiness"
+				- Add Custom Cookie
+			- Effect: The application load balancer will redirect request to one perticular EC2 instance.
+	Network Load Balancer
+		Recipe-1 (Creating NLB)
+			- Create an NLB
+				- Select all AZ
+				- Create a target group of instances
+					- Healthy Threshold: 2, Timeout: 2, Interval: 5
+		Recipe-2 (Adding SSL to NLB) NOT DONE
+			- Add listener to NLB
+			- Protocol HTTPS, PORT 443
+			- Select Action: Forward
+			- Select Target Group
+			- Secure Listener Settings
+				- Security Policy: Default
+			- Import Certificate
+______________________________________________________________________________________________________
+
+Auto Scaling Group Hands-on
+	Recipe-1 (Creating and Demonstrating Auto Scaling Group)
+		- Create Auto Scaling Group (To create one ec2 instance)
+			- Create Launch Template:
+				- Similar Opetions as Launch EC2 along with User Data Script 
+			- Select all availability zones
+			- Attach an ALB
+			- Health Checks: Select ELB
+			- Group Size Capacity: 1 All
+			- Scaling Policy: None
+	Recipe-2 (Automatic Scaling with Scaling Policy)
+		- In the existing ASG go to Automatic Scaling
+			- Dynamic Scaling Policy
+				- Target Tracking
+					- Give some predefined alarms (e.g. Average CPU Utilization)
+				- Step Scaling
+					- Multiple Alarms
+				- Simple Scaling
+					- CloudWatch Alarm
+						- If Alarms: Set Actions
+			- Predivtive Scaling Policy (Forcasting)
+			- Schedule Actions (If you already know the traffic increase pre-schedule the scaling)
+				- Set capacity and date-time
+______________________________________________________________________________________________________
+
+RDS Hands-on
+	Recipe-1 (Creating RDS instance)
+		- Go to Amazon RDS
+		- Under Databases Section (left Sidebar)
+			- Click: Create Database
+				- Standard Create
+				- Select Database
+				- Select DB Version
+				- Template: Production (To see all the options)
+				- Availability & Durability: Single DB instance
+				- Set Database Name
+				- Set username & password
+				- Instance Configuration
+					- Select Burstable Class
+						- Enable: Include Previous Generation Classes
+							- Choose db.t2.micro (Free Tier Class)
+				- Storage
+					- Storage Type: GP2 (Free Tier)
+					- Storage: 20GB
+					- Enable Storage Auto Scaling
+					- Max Storage Threshold: 1000 GB
+				- Connectivity:
+					- Don't connect to EC2 (For Demo)
+					- Select VPC
+					- Subnet: Default
+					- Public Access: Yes
+					- VPC Security Group
+						- AZ: No Preference
+						- Port: 3306
+				- Database Authentication: Password Authentication
+				- Monitoring: Disable
+				- Additional Database Configuration: All Default (Except Initial Database Name)
+				- It will show an estimated cost per month but it will be free tier
+				- Click: Create Database
+				- Click on newely created database
+					- Modify security group inbound rules
+	Recipe-2 (Deleting RDS)
+		- Modify RDS Instance
+		- Disable Delete Protection Setting
+		- Apply Immediately
+		- Delete The Instance
+			- Uncheck: Create Final Snapshot
+	Recipe-3 (Creating Aurora Database)
+		- Go to Amazon RDS
+		- Under Databases Section (left Sidebar)
+			- Click: Create Database
+				- Standard Create
+				- Select Amazon Aurora
+				- Edition: MySQL-Compatible
+				- Version: default
+				- Template: Production
+				- Set Database Name
+				- Set username & password
+				- Instance Configuration
+					- Select Burstable Class
+						- Include Previous Gen Class
+							- db-t2-small
+				- Availability & Durability
+					- Select Option: Create an Aurora Replica or A Reader Node in diff AZ
+				- Connectivity:
+					- Don't connect to EC2 (For Demo)
+					- Select VPC
+					- Subnet: Default
+					- Public Access: Yes
+					- VPC Security Group
+						- AZ: No Preference
+						- Port: 3306
+				- Database Authentication: Password Authentication
+				- Monitoring: Disable
+				- Additional Database Configuration: All Default (Except Initial Database Name)
+				- It will show an estimated cost per month but it will be free tier
+				- Click: Create Database
+				- Click on newely created database
+					- Modify security group inbound rules
+	Recipe-4 (ElastiCache)
+		- Go to ElastiCache Service
+			- Get Started
+				- Create Cluster
+					- Redis Cluster
+						- Create New Cluster
+						- Cluster Mode: Disabled
+						- Location: AWS Cloud
+						- Multi AZ: Disable
+						- Auto Failover: Enabled
+						- Cluster Settings: Default
+							- Node Type: cache.t2.micro
+							- Number of replicas: 0 (To be in free tier)
+						- Subnet Group Settings
+							- Create New Subnet Group: Default
+						- AZ Preferences: No Preference
+						- Security: Default
+						- Backups: Disabled
+						- Maintanance: Default
+						- Create
+
+	Recipe-X (Creating Read Replica)
+		- Open RDS Instance
+			- Actions: Create Read Replica
+				- Multi AZ: Yes
+				- Cancel it (Don' create)
+______________________________________________________________________________________________________
+
+S3 Handson
+	Recipe-1 (Creating a Bucket)
+		- Select unique name
+		- Select region
+		- Object Ownership: Disbale ACL
+		- Check: Block all public access
+		- Versioning: Disabled
+		- Default Encryption: Disabled
+		- Click: Create
+		- Open Newely Created Bucket
+			- Click: Upload
+			- Click: Add Files
+			- Select File and Upload
+			- Open the object (File)
+			- Click open button
+	Recipe-2 (Creating a Bucket Policy)
+		- Open Permissions Tab of Bucket
+		- Edit: Block Public Access Setting
+		- Unckeck: Block Public Access
+		- Scroll Down to the Bucket Policy
+		- Click: Edit
+		- Click: Policy Generator
+			- Select Type of Policy: S3 Bucket Policy
+			- Effect: Allow
+			- Principal: *
+			- AWS Service: S3
+			- Actions: Get Objects
+			- ARN: <BucketName>/*
+			- Click: Add Statement
+			- Click: Generate Policy
+			- Copy the generated JSON
+		- Paste the copied policy in the text area
+		- Click: Save Changes
+	Recipe-3 (Creating a static website)
+		- Go To Bucket Properties
+			- Scroll Down to : Static Website Hosting
+			- Click: Edit
+			- Click: Enable
+			- Select: Host a Static Website
+			- Index Document: index.html
+			- Click: Save
+		- Go Back To the Bucket Objects
+			- Upload the index.html File
+		- Go To Bucket Properties Again
+			- Scroll down to static website hosting
+			- Copy "Bucket Website Endpoint"
+			- Open with a new tab
+	Recipe-4 (Bucket Versioning)
+		- Go To Bucket Properties
+			- Edit: Bucket Versioning Settings
+			- Click: Enable
+		- Override and re-upload any file
+		- Check: Show Version
+		- To Rollback to a specific version
+			- Check the specific file version
+			- Delete the version
+			- to get the previous version
+		* Delete Marker
+	Recipe-5 (Replication)
+		- Create a bucket (Source Bucket) with Enableb Versioning option
+		- Create Another Bucket (Target Bucket) in another region (Or same region) with Enabled Versioning option
+		- Upload File in Source Bucket
+		- Source Bucket: Go To Management
+			- Scroll down to replication rules
+			- Create Replication Rule
+			- Rule Scope: Apply to all objects
+			- Destination: Enter Bucket Name
+			- IMA Role: Create New IAM Role
+			- Save
+			- Replicate Existing Objects? : No
+		- Upload a new file in Source Bucket
+		- Go To Target Bucket and wait for the newely upload file to be replicated
+		- Demonstrate replicatoin with
+			- Versioning
+			- Delete Marker
+			- Permenant Delete
+	Recipe-6 (Changing Storage Classes of an Object)
+		- Create a bucket
+		- Upload File
+		- Under Object Properties: Find all storage classes
+		- Edit Storage Class
+	Recipe-7 (S3 Event Notification)
+		- Create a bucket with all default configuration
+		- Go to: Properties Section of bucket
+			- Scroll down to event notifications
+			- Click: Create Event Notification
+			- Set Event Name
+			- Prefix & Suffix : Blank
+			- Event Types section
+				- Check: All Object Create Event
+			- Scroll down to destination section
+				- Choose: SQS Queue
+			- go to amazon sqs 
+				- Click: create a queue
+				- Set name, keep other configuration default
+				- Click: Create queue
+			- Go back to the destination section of event notification
+				- Select the newely created queue
+				- Click: Save
+				(Error: Unknown Error -  You are not able to validate destination configuration)
+			- Solution of the error:
+				- Go to: Access Policy tab in the SQS Queue
+				- Click: Generate Policy
+					- Select Type of policy: SQS Queue Policy
+					- Effect: Allow
+					- Principal: *
+					- Actions: "Send Message"
+					- Amazon Resource Name (ARN): Copy from access policy and paste it over here
+					- Click: Add Statement
+					- Click: Generate Policy
+			- Go back to access policy edit section
+				- Click: Save
+			- Go back to the event notification
+				- Click: Save
+		- Go to SQS
+			- Click: Send and Receive messages
+			- Scroll Down to : Received Messages
+			- Click: Poll for messages
+			- A test message will be visible sent by amazon s3
+			- To Test this Manually
+				- Upload a file in s3 bucket
+				- Check the received message again
+	Recipe-8 (S3 Object Encryption)
+		- Create a S3 Bucket
+			- Versioning: Enable
+			- Default Encryption: Default Values (SSE-S3)
+		- Upload a file
+		- Click on the uploaded file
+		- Scroll-down to server-side encryption settings
+		- Click: Edit
+			- Scroll to Server-side encryption
+			- Select: Override bucket settings for default encryption
+			- Select: SSE-KMS
+			- Select: Choose from AWS KMS Keys
+			- Select: Default KMS Key for AWS/S3
+			- Click: Save Changes
+		- versions tab	of file
+			- There will be two versions of the file
+		- Properties Tab > Server-side encryptions settings sections
+			- Check the updated settings
+	Recipe-9 (S3 Bucket Encryption)
+		- Go to bucket properties
+		- Change Default Encryption settings
+	Recipe-10 (S3 CORS)
+		- Requirements: 2 s3 buckets with static website hosting enabled (Refer to the Recipe-3)
+			- Bucket-1
+				- index.html > fetch() to fetch another.html file and put inside index.html	
+			- Bucket-2
+				- another.html
+		- Problem:
+			- index.html file will get CORS error while fetching another.html file from a different S3 bucket
+		- Solution:
+			- Go to : Permissions tab of the other S3 bucket.
+			- Scroll down to CORS Sections
+			- Click: Edit
+			- Copy and paste : [
+								    {
+								        "AllowedHeaders": [
+								            "Authorization"
+								        ],
+								        "AllowedMethods": [
+								            "GET"
+								        ],
+								        "AllowedOrigins": [
+								            "<url of first bucket with http://...without slash at the end>"
+								        ],
+								        "ExposeHeaders": [],
+								        "MaxAgeSeconds": 3000
+								    }
+								]
+			- Click: Save Changes
+	Recipe-10 (S3 MFA Delete)
+		- Create a S3 bucket
+			- Bucket Versioning: Enable
+		- Open bucket
+		- Go to : Properties
+		- Edit: Bucket Versioning
+			- Cannot Change MFA Delete using GUI
+		- Login to AWS Console as root user
+		- Go to: Security Credentials
+		- Go to: Access Keys
+		- Click: New Access Key
+		- Download key file
+		- Open: Local Terminal
+			- aws configure --profile <profile-name>
+			- Paste access key id and secret access key
+			- aws s3 ls --profile <profile-name>
+			- Enable MFA Delete:
+				- aws s3api put-bucket-versioning --bucket <bucket-name> --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa "<arn of mfa device> <copy code from the auth app>" --profile root-mfa-delete-demo
+		- Go to: Bucket properties > versioning to verify that mfa delete is enabled
+		- Upload and try to permenently delete a file in the bucket
+	Recipe-11 (S3 Access Log)
+		- Requirements: 2 buckets
+			- Operations bucket (b1)
+			- Logging bucket (b2)
+		- Go to b1 properties
+		- Scroll down to server access logging
+		- Click: Edit
+		- Select: Enable
+		- Select: Target Bucket
+		- Make some activities in b1 (upload new file, Access a file using url)
+		- Check b2 for logs (Will take some time)
+		- Click on a log and read it
+	Recipe-12 (S3 Presigned URLs)
+		- Requirements: A Private S3 bucket
+		- Open a file stored in a private s3 bucket
+		- Click: Object Actions
+		- Select: Shared with a presigned url
+		- Add Expiration Time
+		- Click: Create
+
+	Recipe (Automate the process of changing storage class)
+		- Go to Management Tab
+		- Create Lifecycle Rules
+		- Rule Scope: Apply To All Objects
+		- Lifecycle Rule Action: Move current versions of objects between storage classes
+		- Tranition Current Version Of Objects: Set Transitions
+______________________________________________________________________________________________________
+
+Cloudwatch Handson
+	Recipe-1 (View all available metrics graph)
+		- Go to All Metrics 
+		- Click on Graph Search
+	Recipe-2 (Custom Graphs)
+		- Go to All Metrics
+		- Browse Metrics / Build query
+		- Click: Run
+	Recipe-3 (Log Group)
+		- Can't find solution
+______________________________________________________________________________________________________
+
+Lambdas Handson
+	Recipe-1 (Creating, Testing & Managing Lambda function)
+		- Go To Lambdas Section
+		- Click: Create a function
+		Create function section
+			- Choose: Use a blueprint 
+			- Select Blueprint: Hello-world-python
+			- Click: Configure
+		Basic information section
+		- Execution Role: Create a new role with basic lambda permissions
+		- Click: Create Function
+		Lamba function UI
+			- Click: Test
+			- Choose: Create new test event
+			- Provide Event Name
+			- Click: Create
+		- Explore: Configuration, Monitoring Tabs
+	Recipe-2 (Invoking lambda through AWS CLI)
+		- aws lambda list-functions --region <region-name>
+		- Execute the command according to the operating system
+			- LINUX / MAC
+				aws lambda invoke --function-name demo-lambda --cli-binary-format raw-in-base64-out --payload '{"key1": "value1", "key2": "value2", "key3": "value3" }' --region eu-west-1 response.json
+
+			- WINDOWS POWERSHELL
+				aws lambda invoke --function-name demo-lambda --cli-binary-format raw-in-base64-out --payload '{\"key1\": \"value1\", \"key2\": \"value2\", \"key3\": \"value3\" }' --region eu-west-1 response.json
+
+			- WINDOWS CMD
+				aws lambda invoke --function-name demo-lambda --cli-binary-format raw-in-base64-out --payload "{""key1"":""value1"",""key2"":""value2"",""key3"":""value3""}" --region eu-west-1 response.json
+	Recipe-3 (Lambda with ALB)
+		- Create a lambda function
+			- Select: Author from scratch
+			- Provide: function name
+			- Runtime: Python 3.9
+			- Architecture: x86_64
+			- Click: Create
+		- Create an ALB
+			- Follow the steps in recipe: ELB Hands-on > Application Load Balancer > Recipe-1 (Creating Application Load Balancer)
+			- With the target group of lambda function
+		- Copy Public DNS Address of ALB and paste in Browser's URL Section
+			- A file will be downloaded with the response in it.
+		- Google: Example lambda load balancer aws
+			- Click: docs.aws.amazon.com link
+			- Use the recomended response format
+	Recipe-4 (DLQ)
+		- Create a lambda function
+		- Create a SQS Queue (Standard)
+		- Go to: Function Configuration Tab
+		- Select Asynchronous Invocation
+		- Retry Attempts: 2
+		- Select SQS
+		- Save (You will get an error about execution permission
+		- Go to: Configuration
+		- Select Permissions
+		- Click: Role
+		- Attach Policy
+		- Search & Select: SQSFullAccess
+		- Save
+		- Execute function from CLI Asynchronously
+		- Go to SQS -> Send & Receive Messages
+	Recipe-5 (Lambda with EventBridge -  CRON JOB)
+		- Go to event bridge
+		- Create Rule
+		- Pattern: Schedule
+		- Selec target (Lambda Function)
+		- Create
+		- In lambda function print event to see result in logs
+	Recipe-5 (Lambda with S3 event notification)
+		- Create a new function (Author from scratch)
+		- Create S3 Bucket (In the same region as lambda)
+		- Go to : Bucket Properties -> Event Notification
+		- Click: Create Event Notification
+		- Event Type: All Object Create Event
+		- Destination: Lambda (Choose your lambda)
+		- Upload a file in S3
+		- View cloudwatch logs for the lambda
+	Recipe-6 (Encironment Variables)
+		- Create Lambda
+		- Set environment variables in Configuration -> Environment Variables section
+		- Access using suitable code (E.g in python: import os | os.getenv("key"))
+	Recipe-7 (Monitoring and X-Ray)
+		(Perform this with s3 event notification to get some visualization in x-ray)
+		- Under the configuration tab select Monitoring and Operations tools
+		- Edit
+		- Enable AWS X-Ray
+		- Upload file in s3 and manage code to generate success or exception
+		- Observe X-Ray
+	Recipe-8 (Lambda Performance Hands-on)
+		Cusine-1:
+			- You can edit memory, timeout, Execution Role etc. in : Configuration -> General Configuration
+			- Test Timeout: (E.g. in Python: import time | time.sleep(5))
+		Cusine-2
+			- Always keep frequently used code out of the handler
+			- e.g. Database Connection code
+			- Can simulate the result using any time function (e.g. in python time.sleep(3))
+__________________________________________________________________________________
+
+Cloudfront Hands-on
+	Recipe-1 (Creating Cloudfront Distribution)
+		- Requirements: S3 Bucket with all default settings
+		- Upload some files into the newely created bucket
+		- Go to cloudfront service console
+			- Click: Cloudfront Distribution
+			- Origin Domain: Newely Created Bucket
+			- Origin Access: Origin Access Control Settings
+			- Click: Create Control Setting
+			- Click: Create (In the popup)
+			- Scroll down to default root object: index.html (Any Default Object)
+			- Click: Create Distribution (Distribution can take some time to be created)
+			- Click: Copy Policy at the top Blue section
+		- Go to the S3 bucket > Permissions Tab
+		- Scroll Down to bucket policy
+		- Click: Edit
+		- Paste the copied policy
+		- Click: Save Changes
+		- Go to the Cloudfront Distrubution
+		- Wait for the Last Modified Status change from Deploying to Timestamp
+		- Copy distribution Domain and paste in a new tab.
+	Recipe-2 (Cloudfront Caching & Invalidators)
+		- The problem:
+			- Update and reupload the html file
+			- Refresh the cloudfront url for the same file.
+			- The updations have not been reflected.
+		- The solution:
+			- Go to the Cloudfront Distribution
+			- Open Invalidations Tab
+			- Click: Create Invalidation
+			- Add Object Paths: /*
+			- Click: Create Invalidation
+			- Try refreshing cloudfront url again to see the changes immediately
+	Recipe-3 (Cloudfront Geographic Restrictions)
+		- Open the distrubution
+		- Click: Geographic Restrictions Tab
+		- Click: Edit
+		- Add Allow or Block List
+______________________________________________________________________________________________________
+
+ECS Hands-on
+	
+	Recipe-1 (Working with ECS)
+		Step-1 (Creating ECS Cluster)
+			- Go to ECS Service Console
+			- (Enable "New ECS Experience" in the top left corner of the screen)
+			- Click: Create Cluster
+				- Add Name
+				- Sroll Down to the Infrastructure Section
+				- Check: Amazon EC2 Instances
+				- ASG: Create New ASG
+				- Operating System: Amazon Linux 2
+				- Instance Type: T2 Micro
+				- Click: Create
+				- Go to Autoscaling Groups List (You will find an auto scaling group is created)
+			- Open the newely created cluster
+		Step-2 (Creating Task Definition)
+			- Go to the cluster created in Recipe-1
+			- Click: Task Definition (In the left sidebar)
+				- Provide Name (E.g. nglinxdemos-hello)
+				- Container-1 Section
+					- Name: nglinxdemos-hello
+					- Image URL: nglinxdemos/hello
+					- Click: Next
+				- Environment Section
+					- App Environment: AWS Fargate
+					- CPU: 0.5 CPU
+					- RAMP: 1 GB
+					- Click: Next
+				- Click: Create 
+		Step-3 (Creating Security Groups)
+			- For ALB
+				- Inbound Rule:
+					- Anywhere from IPV6 & IPV4
+			- For ECS Task
+				- Inbound Rule:
+					- All TCP From ALB SG
+		Step-4 (Creating First ECS Service)
+			- Go to Cluster created in Recipe-1
+			- Under Services Tab: Click: Deploy
+				- Application Type: Service
+				- Family: nginxdemo-hello
+				- Revision: 1(Latest)
+				- Provide Service Name
+				- Desired Tasks: 1
+				- Load Balancing: ALB
+				- Choose: Create a new LB
+				- Provide LB Name
+				- Provide TG Name
+				- Health Check Grace Period: 20
+				- Networking Section
+					- Security Group: Existing
+					- Select SG Created in STEP-3 > For ALB
+			- Click: Deploy
+			- Open newely created service to check whether:
+				- 1 task is active & Status Active
+			- Open load balancer
+				- Open URL in new tab
+		Step-5 (Testing with multiple tasks)
+			- Edit the service created in Step-4
+			- Desired Tasks: 4
+			- Once all tasks are active and running refresh the ALB url frequently
+______________________________________________________________________________________________________
+
+EBS (Elastic Bean Stalk) - Handson
+	Recipe-1 (Creating an Application and First Beanstalk Environment)
+		- Make Sure: No running  Load balancers , EC2 instances or auto scaling groups available
+		Steps
+		- Go to bean stalk service
+		- Click: Create Application
+		- Provide Application Name
+		- Select: Platform (e.g. Node Js)
+		- Application Code: Sample Application
+		- Click: Create Application
+		- Wait for the application to be created (Will take a few minutes)
+		- Click on the link provided to see the home page.
+		Activities:
+		- Go to: Events. To see all the events logs generated while creating the application
+		- Verify the services logged in the events are created or not
+		- Explore: Logs, Health, Monitoring etc 
+	Recipe-2 (Creating Second Beanstalk Environment. e.g Development/Production Environment)
+		- Go to the application created in Recipe-1
+		- Click: Create a new environment
+		- Provide Environment Name
+		- Choose Domain (Subdomain)
+		- Platform : Managed Platform : Node Js (Recomended Version)
+		- Application Code: Sample Application
+		- Click: Configure More
+			- Preset: High Availability
+			- Explore the preset configure
+			- Edit: Capacity
+				- Placements: Select All
+				- Click: Save
+			- Click: Create Environment
+	Recipe-3 (Deployment Modes - HandsOn)
+		- Go to: Configuration Menu (In the left sidebar)
+		- Scroll down to : Rolling updates and deployments
+		- Click: Edit
+		- Application Deployment: Immutable
+		- Click: Apply
+		- Click: Applu Configuration
+		- Go to the environment (Wait for the configuration to be updated)
+		- Google: bean stalk sample application zip
+		- Open: aws website link
+		- Scroll down to nodejs-v1.zip
+		- Unzip the downloaded file and open with vs code to view the code
+		- Make a few visible changes (V2)
+		- Go back to beanstalk console
+		- Click: Upload and Deploy
+		- Upload the zip file
+		- Click: Deploy
+		- Wait for the version to be deployed
+		- Scroll down to the events to see what is happening
+		- Go to health: Monitor on what is happening
+	Recipe-4 (Lifecycle Policy)
+		- Go to: Application Versions
+		- Click: Settings
+		- Check: Enable 
+		- Explore the options
+
+______________________________________________________________________________________________________
+
+CI/CD Handson
+	
+	Recipe-1 (Creating Code Pipeline)
+		- Go to Code Pipeline
+		- Click: Create Pipeline
+		- Add pipeline name
+		- Keep everything default and click: Next
+		- Source provider: CodeCommit
+		- Repository Name: (Create a repo with sample node js app and select it)
+		- Branch Name: Master
+		- Change Detection Option: Default (Cloudwatch events)
+		- Click: Next
+		- Skip build stage
+		- Deploy Provider: Elastic Beanstalk
+		- Select Application Name
+		- Click: Create Pipeline
+	Recipe-2 (Extending Pipeline)
+		- Click: Edit (Pipeline) 
+		- Provide Stage Name
+		- Scroll down and Click to 'Add Action Group'
+		- Provide Action Name
+		- Action Provider: Manual Approval
+		- Click: Done
+		Add Another Actions Group
+		- Action Provider: AWS Elastic Bean Stalk
+	Recipe-3 (Test Code with Codebuild)
+		...Continuing from Recipe-2
+		- Go to Codebuild > Build (Left sidebar) > Getting Started
+		- Click: Create Project
+		- Provide Project Name
+		- Source Provider: AWS CodeCommit
+		- Repository: Select Repo Name
+		- Reference: Branch > Main
+		- Environment Image: Managed Image
+		- Operating System: Ubuntu
+		- Runtime: Standard
+		- Image: (Latest)
+		- Image Version: (Latest)
+		- Service Role: New Service Role
+		- Provide Role Name
+		- Keep everything else default
+		- Click: Create Build Project
+		- Click: Start Build
+		- Click: Start (On Next Section)
+		- You will get an error: YML File does not exist
+		- Go to code commit
+		- Click: Create File
+		- File name: buildspec.yml
+		- Copy & Paste code downloaded
+		- Add author name , email address & commit message
+		- Click: Commit Changes
+		- Go to build and start the build again
+		- The build will be success
+	Recipe-4 (Integrating Test with Pipeline)
+		...Continuing From Recipe-3
+		- Open th pipeline
+		- Click: Edit
+		- Add Stage
+		- Name it: Test
+		- Add Action Group
+		- Provide Action Group Name
+		- Action Provider: Code Build
+		- Input Artifact: SourceArtifact
+		- Click: Done
+		- Click: Save
+		- Change Congratulations text to something else in the html file
+		- Build will be start and Fail because it didn't found Congratulations in html file
+______________________________________________________________________________________________________
+
+Cloudformation Hands-on
+	Recipe-1 (Create Stack)
+		- Select the region (Top Right Corner of AWS Console): N. Virginia
+		- Go to cloudformation console
+		- Click: Create Stack 
+		- Choose: Template is ready
+		- Choose: Upload a template file
+		- Upload 0-just-ec2.yml file
+		- Click: Next
+		- Provide stack name
+		- Click: Next
+		- on next page keep everything default 
+		- Click: Next
+		- Click: Create Stack
+		- Open newely created stack
+		- Go to : Events Tab
+		- Click refresh button to monitor on events
+		- Explore : Resources Tab
+	Recipe-2 (Updating template)
+		- Go to the stacks
+		- Select a stack
+		- Click: Update
+		- Select: Replace the template
+		- Upload 1-ec2-with-sg-eip.tml
+		- Provide security group description (As it is in yml file)
+		- 
+______________________________________________________________________________________________________
+
+Cloudwatch
+	CloudTrail 
+		- Go to Dashboard 
+		- Scroll down to Event History to find the event history
+
+______________________________________________________________________________________________________
+
+SQS, SNS, & Kinesis- Hands-on
+	Standard Queue Handson
+		- Create queue
+		- Send message
+		- Poll Message
+	
